@@ -7,7 +7,6 @@ function EventHome() {
 
   useEffect(() => {
     getEvents().then((data) => setEvents(data));
-    console.warn(events);
   }, []);
 
   return (
