@@ -8,14 +8,16 @@ const GameCard = ({
   numberOfPlayers,
   skillLevel,
 }) => (
-  <Card className="text-center">
-    <Card.Header>{title}</Card.Header>
-    <Card.Body>
-      <Card.Title>By: {maker}</Card.Title>
-      <Card.Text>{numberOfPlayers} players needed</Card.Text>
-    </Card.Body>
-    <Card.Footer className="text-muted">Skill Level: {skillLevel}</Card.Footer>
-  </Card>
+  <>
+    <Card className="text-center">
+      <Card.Header>{title}</Card.Header>
+      <Card.Body>
+        <Card.Title>By: {maker}</Card.Title>
+        <Card.Text>{numberOfPlayers} players needed</Card.Text>
+      </Card.Body>
+      <Card.Footer className="text-muted">Skill Level: {skillLevel}</Card.Footer>
+    </Card>
+  </>
 );
 
 GameCard.propTypes = {
