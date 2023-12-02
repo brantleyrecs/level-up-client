@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
+// import { useAuth } from '../../../utils/context/authContext';
 import { useState, useEffect } from 'react';
 import {
   Button,
@@ -9,19 +10,37 @@ import {
   FloatingLabel,
 } from 'react-bootstrap';
 import { getGames } from '../../../utils/data/gameData';
-import { createEvent } from '../../../utils/data/eventData';
+import { createEvent, updateEvent } from '../../../utils/data/eventData';
 
 const initialState = {
   game: 0,
   description: '',
   date: '',
   time: '',
+  organizer: 0,
 };
 
-const EventForm = ({ user }) => {
+const EventForm = ({ user, obj }) => {
   const [games, setGames] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(initialState);
   const router = useRouter();
+  // const { user } = useAuth()
+
+  useEffect(() => {
+    if (obj && obj?.id) {
+      setCurrentEvent((prevState) => ({
+        ...prevState,
+        id: obj.id,
+        game: obj.game ? obj.game.id : 0,
+        description: obj.description,
+        date: obj.date,
+        time: obj.time,
+        organizer: obj.organizer,
+        userId: user.uid,
+      }));
+    }
+    // console.warn(currentEvent);
+  }, [obj, user]);
 
   useEffect(() => {
     getGames().then(setGames);
@@ -39,24 +58,40 @@ const EventForm = ({ user }) => {
     // Prevent form from being submitted
     e.preventDefault();
 
-    const event = {
-      game: Number(currentEvent.gameId),
-      description: currentEvent.description,
-      date: currentEvent.date,
-      time: currentEvent.time,
-      userId: user.uid,
-    };
-
-    // Send POST request to your API
-    createEvent(event).then(() => router.push('/events'));
+    if (obj) {
+      const eventUpdate = {
+        id: obj.id,
+        description: currentEvent.description,
+        date: currentEvent.date,
+        time: currentEvent.time,
+        game: currentEvent.game,
+        organizer: currentEvent.organizer,
+        userId: user.uid,
+      };
+      updateEvent(eventUpdate)
+        .then(() => router.push('/events'));
+    } else {
+      const event = {
+        game: Number(currentEvent.gameId),
+        description: currentEvent.description,
+        date: currentEvent.date,
+        time: currentEvent.time,
+        organizer: currentEvent.organizer,
+        userId: user.uid,
+      };
+      // Send POST request to your API
+      createEvent(event).then(() => router.push('/events'));
+    }
   };
 
   return (
     <>
       <Form onSubmit={handleSubmit}>
+        <h1 className="text-white mt-5">{obj ? 'Update' : 'Create'} Event</h1>
+
         <Form.Group as={Col} controlId="formGridState">
           <Form.Label>Game</Form.Label>
-          <Form.Select defaultValue="Choose..." name="gameId" onChange={handleChange}>
+          <Form.Select value={currentEvent.game} name="game" onChange={handleChange}>
             <option value="">Choose...</option>
             {
                 games.map((game) => (
@@ -112,6 +147,15 @@ const EventForm = ({ user }) => {
 EventForm.propTypes = {
   user: PropTypes.shape({
     uid: PropTypes.string.isRequired,
+  }).isRequired,
+  obj: PropTypes.shape({
+    id: PropTypes.number,
+    // eslint-disable-next-line react/forbid-prop-types
+    game: PropTypes.object,
+    description: PropTypes.string,
+    date: PropTypes.string,
+    time: PropTypes.string,
+    organizer: PropTypes.string,
   }).isRequired,
 };
 
