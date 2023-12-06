@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
-// import { useAuth } from '../../../utils/context/authContext';
 import { useState, useEffect } from 'react';
 import {
   Button,
@@ -9,22 +8,23 @@ import {
   Row,
   FloatingLabel,
 } from 'react-bootstrap';
+import { useAuth } from '../../../utils/context/authContext';
 import { getGames } from '../../../utils/data/gameData';
 import { createEvent, updateEvent } from '../../../utils/data/eventData';
 
 const initialState = {
-  game: 0,
+  gameId: 0,
   description: '',
   date: '',
   time: '',
   organizer: 0,
 };
 
-const EventForm = ({ user, obj }) => {
+const EventForm = ({ obj }) => {
   const [games, setGames] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(initialState);
   const router = useRouter();
-  // const { user } = useAuth()
+  const { user } = useAuth();
 
   useEffect(() => {
     if (obj && obj?.id) {
@@ -35,8 +35,8 @@ const EventForm = ({ user, obj }) => {
         description: obj.description,
         date: obj.date,
         time: obj.time,
-        organizer: obj.organizer,
-        userId: user.uid,
+        organizer: user.uid,
+        // userId: user.uid,
       }));
     }
     // console.warn(currentEvent);
@@ -53,6 +53,9 @@ const EventForm = ({ user, obj }) => {
       [name]: value,
     }));
   };
+
+  console.warn(currentEvent);
+  console.warn(games);
 
   const handleSubmit = (e) => {
     // Prevent form from being submitted
@@ -72,12 +75,12 @@ const EventForm = ({ user, obj }) => {
         .then(() => router.push('/events'));
     } else {
       const event = {
-        game: Number(currentEvent.gameId),
+        game: Number(currentEvent.game),
         description: currentEvent.description,
         date: currentEvent.date,
         time: currentEvent.time,
-        organizer: currentEvent.organizer,
-        userId: user.uid,
+        organizer: user.uid,
+        // userId: user.uid,
       };
       // Send POST request to your API
       createEvent(event).then(() => router.push('/events'));
@@ -91,7 +94,7 @@ const EventForm = ({ user, obj }) => {
 
         <Form.Group as={Col} controlId="formGridState">
           <Form.Label>Game</Form.Label>
-          <Form.Select value={currentEvent.game} name="game" onChange={handleChange}>
+          <Form.Select value={currentEvent.gameId} name="game" onChange={handleChange}>
             <option value="">Choose...</option>
             {
                 games.map((game) => (
@@ -151,7 +154,10 @@ EventForm.propTypes = {
   obj: PropTypes.shape({
     id: PropTypes.number,
     // eslint-disable-next-line react/forbid-prop-types
-    game: PropTypes.object,
+    game: PropTypes.shape({
+      id: PropTypes.number,
+      title: PropTypes.string,
+    }),
     description: PropTypes.string,
     date: PropTypes.string,
     time: PropTypes.string,
